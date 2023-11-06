@@ -29,6 +29,8 @@ inc/
 /_eumm/
 /*.gz
 /Makefile
+config.yml
+*swp
 /Makefile.old
 /MANIFEST.bak
 /pm_to_blib
