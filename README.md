@@ -22,4 +22,21 @@ Aan- en afwezigheid registratie voor locaties, NIET op basis van agenda.
 ## Tools
  - Azure voor medewerkerlijst en authenticatie
  - Dancer2 voor website en api
+ - Bootstrap voor layout/css
  - SQLite database voor personal settings en aanwezigheid
+
+## Data model
+
+### Locaties
+Tabel met daarin de actieve locaties
+- Naam (zoals bekend in Azure)
+- Aktief
+- Leerlingen zien data
+
+### Medewerkers
+Tabel met daarin de medewerkers die zich ook aanwezig hebben gemeld met hun opmerking
+- UPN van medewerker
+- Volledige naam
+- Aan- afwezig
+- Timestamp aanwezigheid
+- Opmerking
