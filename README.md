@@ -30,13 +30,14 @@ Aan- en afwezigheid registratie voor locaties, NIET op basis van agenda.
 ### Locaties
 Tabel met daarin de actieve locaties
 - Naam (zoals bekend in Azure)
-- Aktief
-- Leerlingen zien data
+- Aktief ja/nee
+- Leerlingen zien data ja/nee
 
 ### Medewerkers
-Tabel met daarin de medewerkers die zich ook aanwezig hebben gemeld met hun opmerking
+Tabel met daarin de medewerkers die zich ooit aanwezig hebben gemeld met hun opmerking
 - UPN van medewerker
 - Volledige naam
 - Aan- afwezig
 - Timestamp aanwezigheid
 - Opmerking
+- Opmerking uit agenda ja/nee
