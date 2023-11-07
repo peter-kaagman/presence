@@ -41,3 +41,4 @@ Tabel met daarin de medewerkers die zich ooit aanwezig hebben gemeld met hun opm
 - Timestamp aanwezigheid
 - Opmerking
 - Opmerking uit agenda ja/nee
+- Agenda prefix
