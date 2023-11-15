@@ -1,5 +1,7 @@
 # presence
 Aan- en afwezigheid registratie voor locaties, NIET op basis van agenda.
+_NB_
+Deze readme moet niet gezien worden als een handleiding. Het is meer een plan wat wil doen. Het kan zomaar dat de feitelijke implentatie anders is gegaan dan vooraf bedacht is.
 
 ## Features
 
