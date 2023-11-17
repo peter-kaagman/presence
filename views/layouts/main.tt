@@ -12,6 +12,10 @@
 </head>
 <body>
   <div class="container">
+    <div id="header" class="row">
+      <div class="col-sm-2"><&nbsp;></div>
+      <div class="col-sm-10"><% title %></div>
+    </div>
     <% content %>
     <div id="footer" class="row">
       <div class="col-sm">

@@ -10,26 +10,20 @@ use URI::Encode qw(uri_encode);
 use Data::Dumper;
 
 our $VERSION = '0.1';
+# Routes
 get '/' => sub {
     my $session_data = session->read('oauth');
-    my $loacaties_data = session->read('locaties');
+    my $groepen_data = session->read('locaties');
     if ($session_data->{'azuread'}{'login_info'}{'roles'}){
+        # Medewerker en presence hier ophalen, anders is het niet op tijd aanwezig
         # Alleen de mederwerkers ophalen indien die nog niet in de sessie staan
         if (! $session_data->{'locaties'}){
             _getLocatieMedewerkers();
         }
         # Altijd de aanwezigheid checken
         _getPresence();
-        # Me tonen?
-        my $me = 0;
-        for (my $i=0; $i < @{ $session_data->{'azuread'}{'login_info'}{'roles'} }; $i++ ){
-            $me = 1 if ($session_data->{'azuread'}{'login_info'}{'roles'}[$i] =~ /.*\.writer$/);
-        }
         template 'index' => { 
             'title' => 'presence',
-            'oauth' => $session_data,
-            'locaties' => $loacaties_data,
-            'me' => $me 
         };
     }else{
         return redirect '/about';
@@ -39,7 +33,28 @@ get '/' => sub {
 get '/about' => sub {
     template 'about' => { 'title' => 'presence' };
 };
+# Api routes
+get '/api/getMe' => sub {
+    my $user_data = session->read('oauth');
+    my $result;
+    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){
+        $result->{'result'} = 'ok';
+        # Me tonen?
+        $result->{'me'} = 0;
+        for (my $i=0; $i < @{ $user_data->{'azuread'}{'login_info'}{'roles'} }; $i++ ){
+            $result->{'me'} = 1 if ($user_data->{'azuread'}{'login_info'}{'roles'}[$i] =~ /.*\.writer$/);
+        }
+        $result->{'user_info'}{'displayName'} = $user_data->{'azuread'}{'user_info'}{'displayName'};
+        if ($result->{'me'}){
+            $result->{'user_info'}{'aanwezig'} = $user_data->{'azuread'}{'user_info'}{'aanwezig'};
+            $result->{'user_info'}{'message'} = $user_data->{'azuread'}{'user_info'}{'message'};
 
+        }
+    }else{
+        $result->{'result'} = "geen groepen";
+    }
+    send_as JSON => $result, { content_type => 'application/json; charset=UTF-8' };
+};
 hook before => sub {
     my $session_data = session->read('oauth');
     my $provider = "azuread"; # Lower case of the authentication plugin used
@@ -74,15 +89,21 @@ sub _getLocatieMedewerkers{
     my $sth = database->prepare($qry) or warn(database->errstr);
     $sth->execute();
     # Zoek per locatie de collega's erbij
-    my %locaties;
+    my %groups;
     #say "Medewerkers zoeken per gevonden locatie";
     while (my $row = $sth->fetchrow_hashref()){
         # Locatie naam moet zonder presence prefix en reader|write suffix
         $row->{'naam'} =~ /^presence\.(\w+)\..+/;
-        $locaties{'locaties'}{$1}{'medewerkers'} = _findMedewerkers($row->{'group_staf'});
+        my $group = $1;
+        # Checken of de group al niet in de sessie staat
+        # Kan dat de gebruiker writer en reader is
+        if (! $groups{'locaties'}{$group}){
+            say "Zoeken naar leden van $group";
+            $groups{'locaties'}{$group}{'medewerkers'} = _findMedewerkers($row->{'group_staf'});
+        }
     }
     $sth->finish;
-    session->write(%locaties) if %locaties;
+    session->write(%groups) if %groups;
 }
 sub _findMedewerkers{
     my $group = shift;
@@ -116,8 +137,8 @@ sub _findMedewerkers{
         $group_leden[$i]->{'userPrincipalName'} = lc($group_leden[$i]->{'userPrincipalName'});
     }
     my @sorted = sort{$a->{'displayName'} cmp $b->{'displayName'}} @group_leden;
-    say Dumper \@group_leden;
-    say Dumper \@sorted;
+    #say Dumper \@group_leden;
+    #say Dumper \@sorted;
     return \@sorted;
 }
 sub _getPresence{
@@ -148,8 +169,8 @@ sub _getPresence{
                     $oauth_data->{'azuread'}{'user_info'}{'message'} = $medewerkers_db->{$upn}{'opmerking'};
                 }
             }else{
-                $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = "onbekend";
-                $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  "onbekend";
+                $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 0;
+                $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  "";
             }
         }
     }
@@ -214,4 +235,5 @@ sub _callAPI {
         my $result = $ua->request($req);
         return $result;
 }
+
 true;
