@@ -10,16 +10,14 @@ use URI::Encode qw(uri_encode);
 use Data::Dumper;
 
 our $VERSION = '0.1';
+my $appCnf = setting('AppSettings');
 # Routes
 get '/' => sub {
     my $session_data = session->read('oauth');
     my $groepen_data = session->read('locaties');
     if ($session_data->{'azuread'}{'login_info'}{'roles'}){
         # Medewerker en presence hier ophalen, anders is het niet op tijd aanwezig
-        # Alleen de mederwerkers ophalen indien die nog niet in de sessie staan
-        if (! $session_data->{'locaties'}){
-            _getLocatieMedewerkers();
-        }
+        _getLocatieMedewerkers();
         # Altijd de aanwezigheid checken
         _getPresence();
         template 'index' => { 
@@ -32,28 +30,6 @@ get '/' => sub {
 
 get '/about' => sub {
     template 'about' => { 'title' => 'presence' };
-};
-# Api routes
-get '/api/getMe' => sub {
-    my $user_data = session->read('oauth');
-    my $result;
-    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){
-        $result->{'result'} = 'ok';
-        # Me tonen?
-        $result->{'me'} = 0;
-        for (my $i=0; $i < @{ $user_data->{'azuread'}{'login_info'}{'roles'} }; $i++ ){
-            $result->{'me'} = 1 if ($user_data->{'azuread'}{'login_info'}{'roles'}[$i] =~ /.*\.writer$/);
-        }
-        $result->{'user_info'}{'displayName'} = $user_data->{'azuread'}{'user_info'}{'displayName'};
-        if ($result->{'me'}){
-            $result->{'user_info'}{'aanwezig'} = $user_data->{'azuread'}{'user_info'}{'aanwezig'};
-            $result->{'user_info'}{'message'} = $user_data->{'azuread'}{'user_info'}{'message'};
-
-        }
-    }else{
-        $result->{'result'} = "geen groepen";
-    }
-    send_as JSON => $result, { content_type => 'application/json; charset=UTF-8' };
 };
 hook before => sub {
     my $session_data = session->read('oauth');
@@ -78,6 +54,68 @@ hook before => sub {
      }
 
 };
+# Api routes
+get '/api/getMe' => sub {
+    my $user_data = session->read('oauth');
+    my $result;
+    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){
+        $result->{'result'} = 'ok';
+        # Me tonen?
+        $result->{'me'} = 0;
+        for (my $i=0; $i < @{ $user_data->{'azuread'}{'login_info'}{'roles'} }; $i++ ){
+            $result->{'me'} = 1 if ($user_data->{'azuread'}{'login_info'}{'roles'}[$i] =~ /.*\.writer$/);
+        }
+        $result->{'user_info'}{'displayName'} = $user_data->{'azuread'}{'user_info'}{'displayName'};
+        if ($result->{'me'}){
+            $result->{'user_info'}{'aanwezig'} = $user_data->{'azuread'}{'user_info'}{'aanwezig'};
+            $result->{'user_info'}{'message'} = $user_data->{'azuread'}{'user_info'}{'message'};
+
+        }
+    }else{
+        $result->{'result'} = "geen groepen";
+    }
+    send_as JSON => $result, { content_type => 'application/json; charset=UTF-8' };
+};
+get '/api/getGroepen' => sub {
+    my $user_data = session->read('oauth');
+    my $result;
+    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){
+        $result->{'result'} = 'ok';
+        # Ververs de presence
+        _getPresence();
+        $result->{'groepen'} = session->read('locaties');
+    }else{
+        $result->{'result'} = "geen groepen";
+    }
+    send_as JSON => $result, { content_type => 'application/json; charset=UTF-8' };
+};
+get '/api/getProfilePic/:upn' => sub{
+    my $user_data = session->read('oauth');
+    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid 
+        my $now = time();
+        my $name = route_parameters->get('upn');
+        my $fn = $appCnf->{'CacheDir'}."/$name.jpg";
+        #my $info = stat($fn);
+        #say Dumper $info;
+        if(
+            (-e $fn) && 
+            ( (stat($fn))[9] > ( $now - (24*60*60) ) ) ){
+            say "$fn gevonden";
+            say "$fn ctime:",(stat($fn))[9];
+            say "_sendProfilePic($fn)";
+            _sendProfilePic($fn);
+        }else{
+            say "$fn niet gevonden";
+            say "_getProfilePic($name)";
+            _getProfilePic($name);
+            
+        }
+    }else{
+        say "Sending dummy";
+        _sendProfilePic($appCnf->{'CacheDir'}."/dummy450x450.jpg");
+    }
+};
+# Private functions to do all sort of things
 sub _getLocatieMedewerkers{
     my $session_data = session->read('oauth');
     # Ik moet een search string in elkaar zetten
@@ -109,7 +147,6 @@ sub _findMedewerkers{
     my $group = shift;
     my @group_leden;
     say "We gaan op zoek naar $group";
-    my $appCnf = setting('AppSettings');
     # Eerst de ID zoeken van de AU in kwestie
     # Ik moet filteren met "startswith"
     # er kunnen dus meerdere resultaten ziij
@@ -235,5 +272,36 @@ sub _callAPI {
         my $result = $ua->request($req);
         return $result;
 }
+sub _sendProfilePic {
+    my $file = shift;
+    say "Sending profilePic: $file";
+    my $content = "";
+    if (-e $file){
+        open my $fh, "<:raw", $file or die("Could not open $file for reading: $!\n");
+        while(1){
+            my $success = read $fh, $content, 100, length($content);
+            die $! if not defined $success;
+            last if not $success
+        }
+    }else{
+        die("This should not happen, $file not found");
+    }
+    push_response_header('Content-Type' => "image/jpg");
+    return $content;
+}
 
+sub _getProfilePic {
+    my $name = shift;
+    say "Getting PIC $name";
+    if(0){ # picGevonden
+        say "Pic gevonden online";
+        say "Storing pic ./cache/$name.jpg";
+        say "Sending pic .cache/$name.jpg";
+
+    }else{
+        say "Geen pic gevonden online";
+        say "Sending Dummy";
+        _sendProfilePic($appCnf->{'CacheDir'}."/dummy450x450.jpg");
+    }
+}
 true;

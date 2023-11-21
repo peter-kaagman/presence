@@ -16,5 +16,6 @@ Create Table If Not Exists medewerkers(
 
 Insert Into locaties ('naam','aktief','group_staf') values ('presence.test.writer',1,'presence-test');
 Insert Into locaties ('naam','aktief','group_staf') values ('presence.test.reader',1,'presence-test');
+Insert Into locaties ('naam','aktief','group_staf') values ('presence.test2.writer',1,'presence-test2');
 Insert Into medewerkers ('upn','aanwezig','timestamp_aanwezig','opmerking') values ('t.staf@atlascollege.nl',1,'2023-11-13 08:11','ben er');
 Insert Into medewerkers ('upn','aanwezig','timestamp_aanwezig','opmerking') values ('p.kaagman@atlascollege.nl',1,'2023-11-13 08:11','ben er');

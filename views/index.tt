@@ -8,11 +8,19 @@
   <div class="accordion" id="meAccordion">
     <div class="accordion-item">
       <h2 class="accordion-header" id="meOne">
-        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-          Eigen informatie
+        <button class="accordion-button" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseMe" 
+                aria-expanded="true" 
+                aria-controls="collapseMe">
+          Jouw aanwezigheid
         </button>
       </h2>
-      <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="meOne" data-bs-parent="#meAccordion">
+      <div id="collapseMe" 
+          class="accordion-collapse collapse show" 
+          aria-labelledby="meOne" 
+          data-bs-parent="#meAccordion">
         <div class="accordion-body">
           <div id="me" class="row">
             <!-- Content uit JS -->
@@ -21,7 +29,7 @@
             </div>
             <div class="col-sm-9">
               <div class="row"><div id="meName" class="col-sm">Wordt geladen.</div></div>
-              <div class="row"><div  class="col-sm"><input id="meMessage" type="text" >Wordt geladen.</input></div></div>
+              <div class="row"><div id="meMessage" class="col-sm">Wordt geladen.</div></div>
               <div class="row"><div id="mePresence"class="col-sm">Wordt geladen.</div></div>
             </div>
           </div> <!-- me -->
@@ -34,7 +42,7 @@
     <!-- Hier moet een menu/status bar komen -->
     <p>Hier komt een navigatie balk</p>
   </div>
-  <div id="groepen" class="accordion">
+  <div id="accordionGroepen" class="accordion">
     <!-- Content uit JS-->
     <p>Gegevens worden geladen, moment.</p>
   </div>

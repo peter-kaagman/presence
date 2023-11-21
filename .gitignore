@@ -40,3 +40,4 @@ config.yml
 .dancer
 sessions/
 db/presence.db
+cache/*jpg
