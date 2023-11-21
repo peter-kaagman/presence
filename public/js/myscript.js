@@ -13,11 +13,22 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log(data);
             if (data.result == 'ok'){
                 document.querySelector('#meName').textContent = data.user_info.displayName;
+                document.querySelector('#meImage').setAttribute('src',`/api/getProfilePic/${data.user_info.upn}` );
                 if (data.me){
                     document.querySelector('#meMessage').innerHTML = 
                     `<input type="text" id="edMeMessage" value="${data.user_info.message}">
                     <button type="button" id="btnMeMessage">Ok</button>`;
-                    document.querySelector('#mePresence').textContent = data.user_info.aanwezig;
+                    if(data.user_info.aanwezig){
+                        document.querySelector('#meImage').classList.remove('afwezig');
+                        document.querySelector('#meImage').classList.add('aanwezig');
+                        document.querySelector('#mePresence').classList.remove('afwezig');
+                        document.querySelector('#mePresence').classList.add('aanwezig');
+                    }else{
+                        document.querySelector('#meImage').classList.remove('aanwezig');
+                        document.querySelector('#meImage').classList.add('afwezig');
+                        document.querySelector('#mePresence').classList.remove('aanwezig');
+                        document.querySelector('#mePresence').classList.add('afwezig');
+                    }
                 }else{
                     document.querySelector('#meMessage').textContent = `Jouw aanwezigheid wordt niet bijgehouden`;
                     document.querySelector('#mePresence').textContent = "";
@@ -74,18 +85,23 @@ document.addEventListener("DOMContentLoaded", function() {
                     //console.log(medewerker);
                     // Medewerker in een col
                     //console.log(medewerker);
+                    let aanwezigClass;
+                    if (medewerker.presence){
+                        aanwezigClass = "aanwezig";
+                    }else{
+                        aanwezigClass = "afwezig";
+                    }
                     accordionItems +=
                   `
     <div class="col-sm">
         <div class="card flex-row">
-            <img class="card-img-left example-card-img-responsive" 
+            <img class="card-img-left example-card-img-responsive ${imgClass}" 
                 src="/api/getProfilePic/${medewerker.userPrincipalName}"
                 height=75 width=75
             >
             <div class="card-body">
                 <h4 class="card-title h5 h4-sm">${medewerker.displayName}</h4>
                 <p class="card-text">${medewerker.message}</p>
-                <p class="card-text">${medewerker.presence}</p>
             </div>
         </div>
     </div>

@@ -69,7 +69,7 @@ get '/api/getMe' => sub {
         if ($result->{'me'}){
             $result->{'user_info'}{'aanwezig'} = $user_data->{'azuread'}{'user_info'}{'aanwezig'};
             $result->{'user_info'}{'message'} = $user_data->{'azuread'}{'user_info'}{'message'};
-
+            $result->{'user_info'}{'upn'} = lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'});
         }
     }else{
         $result->{'result'} = "geen groepen";
@@ -197,12 +197,18 @@ sub _getPresence{
             my $upn = $locaties_data->{$locatie}{'medewerkers'}[$i]{'userPrincipalName'};
             if ($medewerkers_db->{$upn}){
                 # Als de medewerker in de db staat
-                # lees dan zijn presence
-                $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = $medewerkers_db->{$upn}{'aanwezig'};
+                # lees dan zijn presence adv timestamp-aanwezig
+                #say ">>>>>>>>>>>>>>>>>>>>".$medewerkers_db->{$upn}{'upn'}."staat in de db";
+                #say ">>>>>>>>>>>>>>>>>>>>".$medewerkers_db->{$upn}{'timestamp_aanwezig'}."staat in de db";
+                if ( ($medewerkers_db->{$upn}{'timestamp_aanwezig'}) && (_isToday($medewerkers_db->{$upn}{'timestamp_aanwezig'}))){
+                    $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 1;
+                }else{
+                    $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 0;
+                }
                 $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  $medewerkers_db->{$upn}{'opmerking'};
                 # Als dit ikzelf ben dan ook opnemen in user_info
                 if ($upn eq lc($oauth_data->{'azuread'}{'login_info'}{'upn'})){
-                    $oauth_data->{'azuread'}{'user_info'}{'aanwezig'} = $medewerkers_db->{$upn}{'aanwezig'};
+                    $oauth_data->{'azuread'}{'user_info'}{'aanwezig'} = $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'};
                     $oauth_data->{'azuread'}{'user_info'}{'message'} = $medewerkers_db->{$upn}{'opmerking'};
                 }
             }else{
@@ -303,5 +309,16 @@ sub _getProfilePic {
         say "Sending Dummy";
         _sendProfilePic($appCnf->{'CacheDir'}."/dummy450x450.jpg");
     }
+}
+
+sub _isToday {
+    my $date = shift;
+    my $dt = DateTime->now();
+    my $today = $dt->ymd;
+    say ">>>>>>>>>>>>>>>>>>>>Vandaag is: ".$today;
+    say ">>>>>>>>>>>>>>>>>>>>$date is: ". $date;
+    # check met een regex
+    return ($date =~ /^$today .*/);
+
 }
 true;

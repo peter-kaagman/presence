@@ -36,3 +36,23 @@
     padding-top: 5px;
     padding-bottom: 5px;
 }
+img.afwezig {
+    border: 3px solid red;
+}
+img.aanwezig {
+    border: 3px solid green;
+}
+#mePresence{
+    height: 30px;
+    width: 30px;
+    display: inline-block;
+}.led.afwezig{
+    background-image: url("/images/led_rood.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+.led.aanwezig{
+    background-image: url("/images/led_groen.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+}
