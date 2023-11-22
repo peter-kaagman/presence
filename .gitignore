@@ -39,5 +39,5 @@ config.yml
 *swp
 .dancer
 sessions/
-db/presence.db
+db/presence.sqlite
 cache/*jpg

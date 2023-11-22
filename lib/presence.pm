@@ -7,6 +7,7 @@ use Dancer2::Session::YAML;
 use LWP::UserAgent;
 use JSON;
 use URI::Encode qw(uri_encode);
+use HTML::Escape qw/escape_html/;
 use Data::Dumper;
 
 our $VERSION = '0.1';
@@ -91,22 +92,22 @@ get '/api/getGroepen' => sub {
 };
 get '/api/getProfilePic/:upn' => sub{
     my $user_data = session->read('oauth');
-    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid 
+    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid login
         my $now = time();
         my $name = route_parameters->get('upn');
         my $fn = $appCnf->{'CacheDir'}."/$name.jpg";
         #my $info = stat($fn);
         #say Dumper $info;
         if(
-            (-e $fn) && 
-            ( (stat($fn))[9] > ( $now - (24*60*60) ) ) ){
-            say "$fn gevonden";
-            say "$fn ctime:",(stat($fn))[9];
-            say "_sendProfilePic($fn)";
+            (-e $fn) &&  # bestaat het bestand
+            ( (stat($fn))[9] > ( $now - (7*24*60*60) ) ) ){ # en is het niet te oud
+            #say "$fn gevonden";
+            #say "$fn ctime:",(stat($fn))[9];
+            #say "_sendProfilePic($fn)";
             _sendProfilePic($fn);
         }else{
-            say "$fn niet gevonden";
-            say "_getProfilePic($name)";
+            #say "$fn niet gevonden";
+            #say "_getProfilePic($name)";
             _getProfilePic($name);
             
         }
@@ -114,6 +115,47 @@ get '/api/getProfilePic/:upn' => sub{
         say "Sending dummy";
         _sendProfilePic($appCnf->{'CacheDir'}."/dummy450x450.jpg");
     }
+};
+post '/api/postData' => sub{
+    my $user_data = session->read('oauth');
+    if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid login
+        my $post = from_json(request->body);
+        my @validFields = ('opmerking','timestamp_aanwezig');
+        if ( 
+            (lc($post->{'upn'}) eq lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'})) && 
+            ( grep(/$post->{'wat'}/,@validFields) ) ){
+            my $value = escape_html($post->{'value'});
+            my $wat = $post->{'wat'};
+            if ( length($value) < 50 ){
+                my $qry = "Select upn From medewerkers Where upn = ?";
+                my $sth = database->prepare($qry);
+                $sth->execute(lc($post->{'upn'}));
+                if (my $row = $sth->fetchrow){
+                    # Medewerker bestaat al
+                    $qry = "Update medewerkers set '$wat' = ? Where upn = ?";
+                }else{
+                    # Medewerker bestaat nog niet
+                    $qry = "Insert Into medewerkers ('$wat','upn') values (? ,?)";
+                }
+                $sth->finish;
+                $sth = database->prepare($qry);
+                if ($sth->execute($value,lc($post->{'upn'}))){
+                    status 200;
+                }else{
+                    status 500;
+                }
+                $sth->finish;
+            }else{
+                status 400;
+            }
+            return "ok";
+        } else {
+            status 401;
+        }
+    }else{
+        status 401;
+    }
+    return;
 };
 # Private functions to do all sort of things
 sub _getLocatieMedewerkers{
@@ -315,10 +357,12 @@ sub _isToday {
     my $date = shift;
     my $dt = DateTime->now();
     my $today = $dt->ymd;
-    say ">>>>>>>>>>>>>>>>>>>>Vandaag is: ".$today;
-    say ">>>>>>>>>>>>>>>>>>>>$date is: ". $date;
+    #say ">>>>>>>>>>>>>>>>>>>>Vandaag is: ".$today;
+    #say '>>>>>>>>>>>>>>>>>>>>$date is: '. $date;
     # check met een regex
-    return ($date =~ /^$today .*/);
-
+    my $result = 0;
+    $result = 1 if ($date =~ /^$today .*/);
+   # say '>>>>>>>>>>>>>>>>>>>>returning: '. $result;
+   return $result;
 }
 true;

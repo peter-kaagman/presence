@@ -31,20 +31,13 @@
             >
             <div class="card-body">
                 <h4 id="meName" class="card-title h5 h4-sm">Wordt geladen.</h4>
-                <p  id="meMessage" class="card-text">Wordt geladen</p>
-                <p class="card-text">Aanwezig?: <span id="mePresence">&nbsp;</span></p>
+                <div  id="meMessage" class="card-text">Wordt geladen</div>
+                <label class="switch">
+                  <input id="mePresence" type="checkbox">
+                  <span class="slider round"></span>
+                </label>
             </div>
           </div>
-            <!--
-            <div class="col-sm-3">
-              <img id="meImage" src="/images/dummy450x450.jpg" width=100 height=100>
-            </div>
-            <div class="col-sm-9">
-              <div class="row"><div id="meName" class="col-sm">Wordt geladen.</div></div>
-              <div class="row"><div id="meMessage" class="col-sm">Wordt geladen.</div></div>
-              <div class="row"><div id="mePresence"class="col-sm">Wordt geladen.</div></div>
-            </div>
-            -->
           </div> <!-- me -->
           <div id="nav" class="row">
         </div>
