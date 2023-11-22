@@ -120,6 +120,7 @@ post '/api/postData' => sub{
     my $user_data = session->read('oauth');
     if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid login
         my $post = from_json(request->body);
+        say Dumper $post;
         my @validFields = ('opmerking','timestamp_aanwezig');
         if ( 
             (lc($post->{'upn'}) eq lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'})) && 
@@ -361,8 +362,8 @@ sub _isToday {
     #say '>>>>>>>>>>>>>>>>>>>>$date is: '. $date;
     # check met een regex
     my $result = 0;
-    $result = 1 if ($date =~ /^$today .*/);
-   # say '>>>>>>>>>>>>>>>>>>>>returning: '. $result;
+    $result = 1 if ($date =~ /^$today.*/);
+    #say '>>>>>>>>>>>>>>>>>>>>returning: '. $result;
    return $result;
 }
 true;
