@@ -106,6 +106,7 @@ get '/api/getProfilePic/:upn' => sub{
             #say "_sendProfilePic($fn)";
             _sendProfilePic($fn);
         }else{
+            # Te oud of bestaat niet
             #say "$fn niet gevonden";
             #say "_getProfilePic($name)";
             _getProfilePic($name);
@@ -342,6 +343,7 @@ sub _sendProfilePic {
 sub _getProfilePic {
     my $name = shift;
     say "Getting PIC $name";
+    
     if(0){ # picGevonden
         say "Pic gevonden online";
         say "Storing pic ./cache/$name.jpg";

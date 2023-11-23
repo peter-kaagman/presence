@@ -22,12 +22,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     // er mag echter geen @ in staan.
                     // Ik drop daarom de domein naam
                     let chkClass = 'presence' + data.user_info.upn.split('@')[0];
-                    let msgClass = 'message' + data.user_info.upn.split('@')[0];
+                    let msgClass = 'message_' + data.user_info.upn.replace('@','_');
                     // ik denk dat de punt ook niet kan
                     chkClass = chkClass.split('.')[0]+chkClass.split('.')[1];
-                    msgClass = msgClass.split('.')[0]+msgClass.split('.')[1];
-                    document.querySelector('#meMessage').innerHTML = `<input type="text" id="edMeMessage" wat="opmerking" upn="${data.user_info.upn}" value="${data.user_info.message}">`;
-                    document.querySelector('#meMessage').classList.add(msgClass);
+                    msgClass = msgClass.replaceAll('.','_');
+                    console.log(`msgClass is ${msgClass}`)
+                    document.querySelector('#meMessage').innerHTML = `<input type="text" id="edMeMessage" class="${msgClass}" wat="opmerking" upn="${data.user_info.upn}" value="${data.user_info.message}" org_value="${data.user_info.message}">`;
                     document.querySelector('#mePresence').setAttribute('upn', data.user_info.upn);
                     document.querySelector('#mePresence').setAttribute('wat', 'timestamp_aanwezig');
                     document.querySelector('#mePresence').classList.add(chkClass);
@@ -69,23 +69,26 @@ document.addEventListener("DOMContentLoaded", function() {
         if ( (e.keyCode == 13) || (e.type == 'focusout') ){
             if (e.target.classList.contains('dirty')){
                 console.log("Enter of Focusout en is dirty");
-                postData( { value: e.target.value, upn: e.target.getAttribute('upn'), wat:e.target.getAttribute('wat') })
+                postData( { value: e.target.value, upn: e.target.getAttribute('upn'), wat: e.target.getAttribute('wat') })
                 .then( (response) => {
-                    e.target.classList.remove('dirty');
-                    console.log('Dit krijgen we terug');
-                    console.log(response); 
-                    let msgClass = 'message' + upn.split('@')[0];
-                    msgClass = msgClass.split('.')[0]+msgClass.split('.')[1];
-                    document.querySelectorAll('.'+msgClass).forEach((input) =>{
-                        input.value = newMsg;
-                    });
+                    if (response.ok){
+                        e.target.classList.remove('dirty');
+                        //console.log('Dit krijgen we terug');
+                        //console.log(response); 
+                        let msgClass = 'message_' + e.target.getAttribute('upn').replace('@','_');
+                        msgClass = msgClass.replaceAll('.','_');
+                        let newMsg = e.target.value;
+                        //console.log(`msgClass: ${msgClass}, newMsg ${newMsg}`);
+                        document.querySelectorAll('.'+msgClass).forEach((input) =>{
+                            input.value = newMsg;
+                        });
+                    }
                 });
             }
         }else{
             console.log("adding dirty");
-            console.log(e.keyCode);
+            console.log(`keycode is ${e.keyCode}`);
             e.target.classList.add("dirty");
-            let newMsg = e.target.value;
         }
     }
     // Evenlistener voor edMessage, set dirty on keyup
@@ -185,8 +188,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     let chkClass = 'presence' + medewerker.userPrincipalName.split('@')[0];
                     // ik denk dat de punt ook niet kan
                     chkClass = chkClass.split('.')[0]+chkClass.split('.')[1];
-                    let msgClass = 'message' + medewerker.userPrincipalName.split('@')[0];
-                    msgClass = msgClass.split('.')[0]+msgClass.split('.')[1];
+                    let msgClass = 'message_' + medewerker.userPrincipalName.replace('@','_');
+                    msgClass = msgClass.replaceAll('.','_');
+                    let readonly = 'readonly'
+                    if (medewerker.userPrincipalName == me){
+                        readonly = '';
+                    }
                     accordionItems +=
                     `
     <div class="col-sm">
@@ -194,9 +201,9 @@ document.addEventListener("DOMContentLoaded", function() {
             <img class="card-img-left example-card-img-responsive ${aanwezigClass}" src="/api/getProfilePic/${medewerker.userPrincipalName}" height=75 width=75>
             <div class="card-body">
                 <h4 class="card-title h5 h4-sm">${medewerker.displayName}</h4>
-                <input id="${locatie}gridPresence${medewerker.userPrincipalName}" class="gridEdit ${msgClass}" wat="opmerking" upn="${medewerker.userPrincipalName}" value='${medewerker.message}' readonly><br>
+                <input type="text "id="${locatie}gridPresence${medewerker.userPrincipalName}" wat="opmerking" upn="${medewerker.userPrincipalName}" class="gridEdit ${msgClass}" value='${medewerker.message}' org_value='${medewerker.message}' ${readonly}><br>
                 <label class="switch">
-                  <input id="${locatie}gridPresence${medewerker.userPrincipalName}" class="gridCheckbox ${chkClass}" wat="timestamp_aanwezig" upn="${medewerker.userPrincipalName}" type="checkbox" ${checked}>
+                  <input id="${locatie}gridPresence${medewerker.userPrincipalName}" class="gridCheckbox ${chkClass}" wat="timestamp_aanwezig" upn="${medewerker.userPrincipalName}" type="checkbox" ${checked} ${readonly}>
                   <span class="slider round"></span>
                 </label>
             </div>
@@ -222,8 +229,18 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             document.querySelector('#accordionGroepen').innerHTML = accordionItems;
             // Change event handler op de grid checkboxen
-            document.querySelectorAll(".gridCheckbox").forEach((card) =>{
-                card.addEventListener("change", handlePresence, false);
+            document.querySelectorAll(".gridCheckbox").forEach((checkbox) =>{
+                if (!checkbox.readOnly){
+                    checkbox.addEventListener("change", handlePresence, false);
+                }
+            });
+            // Change event handler op de grid text inputs
+            document.querySelectorAll(".gridEdit").forEach((input) =>{
+                if (!input.readOnly){
+                    console.log(`adding eventhandler ${input.getAttribute('upn')}`);
+                    input.addEventListener("keydown", handleMessageEdit, false);
+                    input.addEventListener("focusout", handleMessageEdit, false);
+                }
             });
         })
         .catch( err => {

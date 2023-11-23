@@ -48,9 +48,6 @@ img.aanwezig {
     display: inline-block;
 }
 
-#edMeMessage.dirty{
-    border: 4px solid red;
-}
 .switch {
     position: relative;
     display: inline-block;
@@ -110,3 +107,12 @@ img.aanwezig {
   .slider.round:before {
     border-radius: 50%;
   }
+
+  input:read-only {
+    border: none;
+    outline: none;
+  }
+  .dirty{
+    border: 1px solid red;
+    outline: red solid 1px
+}
