@@ -9,6 +9,7 @@ use JSON;
 use URI::Encode qw(uri_encode);
 use HTML::Escape qw/escape_html/;
 use Data::Dumper;
+use Image::Magick;
 
 our $VERSION = '0.1';
 my $appCnf = setting('AppSettings');
@@ -114,7 +115,7 @@ get '/api/getProfilePic/:upn' => sub{
         }
     }else{
         say "Sending dummy";
-        _sendProfilePic($appCnf->{'CacheDir'}."/dummy450x450.jpg");
+        _sendProfilePic($appCnf->{'CacheDir'}."/dummy100x100.jpg");
     }
 };
 post '/api/postData' => sub{
@@ -262,7 +263,7 @@ sub _getPresence{
         }
     }
 }
-# _doGetItem 
+# _doGetItems 
 # Generieke recursive function om items te laden bij graph
 # Indien er een nextLink is roept hij zichzelf aan.
 # Geeft de items terug via de $items reference
@@ -343,16 +344,27 @@ sub _sendProfilePic {
 sub _getProfilePic {
     my $name = shift;
     say "Getting PIC $name";
-    
-    if(0){ # picGevonden
+    my $url = $appCnf->{'GraphEndpoint'}."/v1.0/users/$name/photo/\$value";
+    my $reply = _callAPI($url, 'GET');
+    if($reply->is_success){ # picGevonden
         say "Pic gevonden online";
-        say "Storing pic ./cache/$name.jpg";
-        say "Sending pic .cache/$name.jpg";
+        say $reply->{'_headers'}{'content-type'};
+        say "Image::Magick";
+        my $Img = Image::Magick->new(magick=> 'JPG');
+        $Img->BlobToImage($reply->content);
+        $Img->Resize(geometry=>"150x150");
+        say "Storing pic ".$appCnf->{'CacheDir'}."/$name.jpg";
+        $Img->Write(filename=>$appCnf->{'CacheDir'}."/$name.jpg",compression=>'non');
+        #open my $fn, '>:raw' , $appCnf->{'CacheDir'}."/$name.jpg";
+        #print $fn $reply->content;
+        #close $fn;
+        say "Sending pic ".$appCnf->{'CacheDir'}."/$name.jpg";
+        _sendProfilePic($appCnf->{'CacheDir'}."/$name.jpg");
 
     }else{
         say "Geen pic gevonden online";
         say "Sending Dummy";
-        _sendProfilePic($appCnf->{'CacheDir'}."/dummy450x450.jpg");
+        _sendProfilePic($appCnf->{'CacheDir'}."/dummy100x100.jpg");
     }
 }
 
