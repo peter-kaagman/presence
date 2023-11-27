@@ -8,12 +8,21 @@
 
 
 #header {
-    background-image: url("/images/perldancer.jpg");
-    background-repeat: no-repeat;
-    background-color: RGBA(0,127,202,1);
-    height: 64px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    height: 100px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+#divLogo{
+  background-color: white;
+}
+#divTitel{
+  background-color: RGBA(0,127,202,1);
+}
+.titel{
+  color: white;
+  font-size: x-large;
+  display: inline-block;
+  font-family: "Permanent Marker",handwriting;
 }
 #me {
     background-color: RGBA(0,127,202,.5);

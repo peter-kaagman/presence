@@ -2,5 +2,31 @@
 
 
 <div id="page">
-  <h1>About</h1>
+  <h1>Over Presence</h1>
+
+  <h2>Disclaimer</h2>
+  <p>Het doel van Presence is informatief. Gegevens worden op geen enkele manier bewaart of gelogt anders dan voor de technische werking van de applicatie. Er worden geen gegevens gedeeld met wie of wat dan ook. Er is ook geen API (gegevens koppeling) beschikbaar om dit te kunnen doen.</p>
+  
+  <h2>Introductie</h2>
+  <p>Presence is een applicatie om de aan- en afwezigheid van een groep mensen te tonen. Hierbij zijn verschillende scenario's mogelijk:</p>
+  <ul>
+    <li>
+      <h3>Je bent niet lid van groep.</h3>
+      <p>In dit geval kun je van niemand de aan- of afwezigheid zien. Je zult altijd doorverwezen worden naar deze pagina</p>
+    </li>
+    <li>
+      <h3>Je aan- of afwezigheid wordt niet bijgehouden.</h3>
+      <p>Je bent dan "lezer" van een groep. Je krijgt een raster te zien met personen van die groep waarvan de aan- of aanwezigheid wel bijgehouden wordt.</p>
+  </li>
+    <li>
+      <h3>Je aan- of afwezigheid kan worden bijgehouden.</h3>
+      <p>Je bent dan "schijver" in een groep. Naast het raster, wat je als "lezer" ook ziet, kun je je eigen status aangeven in het zogenaamde "Me" deel. Naast je aan- of afwezigheid kun je ook een korte mededeling opgeven.</p>
+    </li>
+  </ul>
+  
+  <h2>Meedere groepen.</h2>
+  <p>Het is mogelijk dat je lid bent van verschillende groepen. Je kun zelfs in de ene groep "schrijver" zijn en in de andere groep "lezer". Standaard wordt er echter maar één groep getoond. Groepen kun je open of dicht klappen.</p>
+
+  <h2>Feedback.</h2>
+  <p>Bevalt iets je niet, of juist wel, heb je een suggestie? Laat dit dan weten! Feedback wordt ontzettend op prijs gesteld. Hiervoor is een <a href="https://forms.office.com/e/NGY7FvLmmr">formulier</a> gemaakt in office, gebruik deze bij voorkeur.</p>
 </div>
