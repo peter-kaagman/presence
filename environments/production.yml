@@ -11,3 +11,12 @@ show_stacktrace: 0
 
 # disable server tokens in production environments
 no_server_tokens: 1
+
+session: Memcached
+engines:
+  session:
+    Memcached:
+      memcached_servers: 
+        - 127.0.0.1:11211
+      fatal_cluster_unreachable: 0
+      cookie_name: 'presence_session'

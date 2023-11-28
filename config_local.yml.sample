@@ -1,0 +1,13 @@
+plugins:
+  "Auth::OAuth":
+    providers:
+      AzureAD:
+        urls:
+          authorize_url: "https://login.microsoftonline.com/<tenant id>/oauth2/authorize"
+          access_token_url: "https://login.microsoftonline.com/<tenant id>/oauth2/token"
+        tokens:
+          client_id: '<client id>'
+          client_secret: '<client secret>'
+        query_params:
+          authorize:
+            scope: 'User.Read'

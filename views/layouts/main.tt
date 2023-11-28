@@ -14,8 +14,8 @@
 <body>
   <div class="container">
     <div id="header" class="row">
-      <div id="divLogo" class="col-sm-2"><img src="/images/Atlas College_logo_geen_tekst_fc_C.png" height="80px"></div>
-      <div id="divTitel" class="col-sm-10"><p class="align-middle titel">Aan- en afwezigheid</p></div>
+      <div id="divLogo" class="col-sm-2 text-center align-middle"><img class="img-fluid" src="/images/Atlas College_logo_geen_tekst_fc_C.png" ></div>
+      <div id="divTitel" class="col-sm-10"><p class="titel">Aan- en afwezigheid</p></div>
     </div>
     <% content %>
     <div id="footer" class="row">

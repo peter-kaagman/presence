@@ -35,9 +35,9 @@ inc/
 /*.zip
 
 # PKn added
-config.yml
 *swp
 .dancer
 sessions/
 db/presence.sqlite
 cache/*jpg
+config_local.yml

@@ -18,3 +18,12 @@ show_stacktrace: 1
 
 # print the banner
 startup_info: 1
+
+session: "YAML"
+
+engines:
+  session:
+    YAML:
+      cookie_name: presence.session
+      is_secure: 1
+      is_http_only: 1
