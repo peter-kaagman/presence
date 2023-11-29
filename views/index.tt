@@ -1,6 +1,6 @@
 
 
-<div id="content">
+<div id="content" class="row">
   <!--
   Plaats de me div in een accordion zodat de gebruiker
   hem uit de weg kan zetten
@@ -39,7 +39,6 @@
             </div>
           </div>
           </div> <!-- me -->
-          <div id="nav" class="row">
         </div>
       </div>
     </div>

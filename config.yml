@@ -3,9 +3,9 @@
 # all the settings in this file will be loaded at Dancer's startup.
 
 # Please allso have a look at:
-# config_local.yml
-# environments/production.yml
-# environments/development.yml
+# config_local.yml <= Microsoft settings and secrets
+# environments/production.yml <= memcached session settings
+# environments/development.yml <= yaml file session settings
 
 
 # === Basic configuration ===

@@ -1,26 +1,28 @@
 #page {
     background-color: #ddd;
 }
-
 #content {
     background-color: white;
 }
-
 #header {
     height: 100px;
     padding-top: 10px;
     padding-bottom: 10px;
 }
-#divLogo{
+#logo{
+  background-image: url("/images/Atlas_College_logo_geen_tekst_fc_C.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center center;
   background-color: white;
+  min-height: 50px;
 }
-#divTitel{
+#title{
   background-color: RGBA(0,127,202,1);
 }
-.titel{
+#titleText{
   color: white;
   font-size: x-large;
-  display: inline-block;
   font-family: "Permanent Marker",handwriting;
 }
 #me {

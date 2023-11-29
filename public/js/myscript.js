@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function() {
     setInterval( function(){
         console.log("refresh triggered");
         doRefresh();
-    }, 1000 * 10 * 1);
+    }, 1000 * 60 * 5);
 
     // Haal de Me dat op en maak de output
     function getMe(){

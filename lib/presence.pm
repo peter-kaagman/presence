@@ -12,7 +12,6 @@ use Data::Dumper;
 use Image::Magick;
 
 our $VERSION = '0.1';
-my $appCnf = setting('AppSettings');
 # Routes
 get '/' => sub {
     my $session_data = session->read('oauth');
@@ -96,33 +95,24 @@ get '/api/getProfilePic/:upn' => sub{
     if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid login
         my $now = time();
         my $name = route_parameters->get('upn');
-        my $fn = $appCnf->{'CacheDir'}."/$name.jpg";
-        #my $info = stat($fn);
-        #say Dumper $info;
+        my $fn = config->{'AppSettings'}{'CacheDir'}."/$name.jpg";
         if(
             (-e $fn) &&  # bestaat het bestand
             ( (stat($fn))[9] > ( $now - (7*24*60*60) ) ) ){ # en is het niet te oud
-            #say "$fn gevonden";
-            #say "$fn ctime:",(stat($fn))[9];
-            #say "_sendProfilePic($fn)";
             _sendProfilePic($fn);
         }else{
             # Te oud of bestaat niet
-            #say "$fn niet gevonden";
-            #say "_getProfilePic($name)";
             _getProfilePic($name);
             
         }
     }else{
-        say "Sending dummy";
-        _sendProfilePic($appCnf->{'CacheDir'}."/dummy100x100.jpg");
+        _sendProfilePic(config->{'AppSettings'}{'CacheDir'}."/dummy100x100.jpg");
     }
 };
 post '/api/postData' => sub{
     my $user_data = session->read('oauth');
     if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid login
         my $post = from_json(request->body);
-        say Dumper $post;
         my @validFields = ('opmerking','timestamp_aanwezig');
         if ( 
             (lc($post->{'upn'}) eq lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'})) && 
@@ -168,12 +158,10 @@ sub _getLocatieMedewerkers{
     my $or_string = join "\' or naam Like \'", @{ $session_data->{'azuread'}{'login_info'}{'roles'} };
     $or_string = "\'". $or_string . "\'";
     my $qry = "Select * From locaties Where naam Like $or_string";
-    #say $qry;
     my $sth = database->prepare($qry) or warn(database->errstr);
     $sth->execute();
     # Zoek per locatie de collega's erbij
     my %groups;
-    #say "Medewerkers zoeken per gevonden locatie";
     while (my $row = $sth->fetchrow_hashref()){
         # Locatie naam moet zonder presence prefix en reader|write suffix
         $row->{'naam'} =~ /^presence\.(\w+)\..+/;
@@ -181,7 +169,6 @@ sub _getLocatieMedewerkers{
         # Checken of de group al niet in de sessie staat
         # Kan dat de gebruiker writer en reader is
         if (! $groups{'locaties'}{$group}){
-            say "Zoeken naar leden van $group";
             $groups{'locaties'}{$group}{'medewerkers'} = _findMedewerkers($row->{'group_staf'});
         }
     }
@@ -195,32 +182,26 @@ sub _findMedewerkers{
     # Eerst de ID zoeken van de AU in kwestie
     # Ik moet filteren met "startswith"
     # er kunnen dus meerdere resultaten ziij
-    my $url = $appCnf->{'GraphEndpoint'}."/v1.0/groups";
+    my $url = config->{'AppSettings'}{'GraphEndpoint'}."/v1.0/groups";
     $url .= "?\$filter=startswith(displayName,\'$group\')";
     $url .= "&\$select=displayName,id";
-    #say $url;
     my @groups;
     _doGetItems($url,\@groups);
     my $group_id;
     # Zoek de group met de exacte match
     for my $item ( @groups){
-        #say "Vergelijk ".$item->{'displayName'}." met $group";
         $group_id = $item->{'id'} if ($item->{'displayName'} eq $group);
     }
     # Return lege lijst indien de group niet gevonden is 
     return \@group_leden unless $group_id;
-    $url = $appCnf->{'GraphEndpoint'}."/v1.0/groups/$group_id/members";
+    $url = config->{'AppSettings'}{'GraphEndpoint'}."/v1.0/groups/$group_id/members";
     $url .= '?$select=displayName,userPrincipalName';
-    #say $url;
     _doGetItems($url,\@group_leden);
     # UPN moet lowercase zijn
     for (my $i=0; $i < @group_leden; $i++){
-        #say "Is deze lowercase? ";
         $group_leden[$i]->{'userPrincipalName'} = lc($group_leden[$i]->{'userPrincipalName'});
     }
     my @sorted = sort{$a->{'displayName'} cmp $b->{'displayName'}} @group_leden;
-    #say Dumper \@group_leden;
-    #say Dumper \@sorted;
     return \@sorted;
 }
 sub _getPresence{
@@ -313,19 +294,14 @@ sub _callAPI {
         $req->header('User-Agent'    => 'Perl/LWP',    );
         $req->header('Content-Type'  => 'application/json');
         if (defined $content){
-          #say "====== content";
-          #say $content;
           $req->content($content);
           $req->content_length(length($content));
-          #say "=====request";
-          #print Dumper $req;
         }
         my $result = $ua->request($req);
         return $result;
 }
 sub _sendProfilePic {
     my $file = shift;
-    say "Sending profilePic: $file";
     my $content = "";
     if (-e $file){
         open my $fh, "<:raw", $file or die("Could not open $file for reading: $!\n");
@@ -343,28 +319,17 @@ sub _sendProfilePic {
 
 sub _getProfilePic {
     my $name = shift;
-    say "Getting PIC $name";
-    my $url = $appCnf->{'GraphEndpoint'}."/v1.0/users/$name/photo/\$value";
+    my $url = config->{'AppSettings'}{'GraphEndpoint'}."/v1.0/users/$name/photo/\$value";
     my $reply = _callAPI($url, 'GET');
     if($reply->is_success){ # picGevonden
-        say "Pic gevonden online";
-        say $reply->{'_headers'}{'content-type'};
-        say "Image::Magick";
         my $Img = Image::Magick->new(magick=> 'JPG');
         $Img->BlobToImage($reply->content);
         $Img->Resize(geometry=>"150x150");
-        say "Storing pic ".$appCnf->{'CacheDir'}."/$name.jpg";
-        $Img->Write(filename=>$appCnf->{'CacheDir'}."/$name.jpg",compression=>'non');
-        #open my $fn, '>:raw' , $appCnf->{'CacheDir'}."/$name.jpg";
-        #print $fn $reply->content;
-        #close $fn;
-        say "Sending pic ".$appCnf->{'CacheDir'}."/$name.jpg";
-        _sendProfilePic($appCnf->{'CacheDir'}."/$name.jpg");
+        $Img->Write( filename => config->{'AppSettings'}{'CacheDir'}."/$name.jpg",compression=>'non' );
+        _sendProfilePic(config->{'AppSettings'}{'CacheDir'}."/$name.jpg");
 
     }else{
-        say "Geen pic gevonden online";
-        say "Sending Dummy";
-        _sendProfilePic($appCnf->{'CacheDir'}."/dummy100x100.jpg");
+        _sendProfilePic(config->{'AppSettings'}{'CacheDir'}."/dummy100x100.jpg");
     }
 }
 
@@ -372,12 +337,9 @@ sub _isToday {
     my $date = shift;
     my $dt = DateTime->now();
     my $today = $dt->ymd;
-    #say ">>>>>>>>>>>>>>>>>>>>Vandaag is: ".$today;
-    #say '>>>>>>>>>>>>>>>>>>>>$date is: '. $date;
     # check met een regex
     my $result = 0;
     $result = 1 if ($date =~ /^$today.*/);
-    #say '>>>>>>>>>>>>>>>>>>>>returning: '. $result;
    return $result;
 }
 true;
