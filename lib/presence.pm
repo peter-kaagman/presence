@@ -5,7 +5,7 @@ use Dancer2::Plugin::Auth::OAuth;
 use Dancer2::Plugin::Database;
 use Dancer2::Session::YAML;
 use LWP::UserAgent;
-use JSON;
+#use JSON;
 use URI::Encode qw(uri_encode);
 use HTML::Escape qw/escape_html/;
 use Data::Dumper;
