@@ -1,0 +1,5 @@
+[presence:192297] error @2023-12-05 15:02:38> Exception caught in 'core.app.before_request' filter: Hook error: Can't locate object method "now" via package "DateTime" (perhaps you forgot to load "DateTime"?) at /var/www/presence/bin/../lib/presence.pm line 38.
+ at /usr/local/share/perl/5.34.0/Dancer2/Plugin.pm line 593. in /usr/local/share/perl/5.34.0/Dancer2/Core/App.pm l. 678
+[presence:192297] error @2023-12-05 15:02:38> Route exception: Exception caught in 'core.app.before_request' filter: Hook error: Can't locate object method "now" via package "DateTime" (perhaps you forgot to load "DateTime"?) at /var/www/presence/bin/../lib/presence.pm line 38.
+ at /usr/local/share/perl/5.34.0/Dancer2/Plugin.pm line 593.
+ at /usr/local/share/perl/5.34.0/Dancer2/Core/Role/Hookable.pm line 115. in /usr/local/share/perl/5.34.0/Dancer2/Core/App.pm l. 1516

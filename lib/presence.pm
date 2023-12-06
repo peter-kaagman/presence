@@ -10,6 +10,7 @@ use URI::Encode qw(uri_encode);
 use HTML::Escape qw/escape_html/;
 use Data::Dumper;
 use Image::Magick;
+use DateTime;
 
 our $VERSION = '0.1';
 # Routes
@@ -158,6 +159,7 @@ sub _getLocatieMedewerkers{
     my $or_string = join "\' or naam Like \'", @{ $session_data->{'azuread'}{'login_info'}{'roles'} };
     $or_string = "\'". $or_string . "\'";
     my $qry = "Select * From locaties Where naam Like $or_string";
+    say Dumper database;
     my $sth = database->prepare($qry) or warn(database->errstr);
     $sth->execute();
     # Zoek per locatie de collega's erbij

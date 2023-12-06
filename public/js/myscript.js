@@ -123,7 +123,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.querySelectorAll('.'+chkClass).forEach((checkbox) =>{
                         checkbox.checked = newState;
                     });
-                    
+                    let imgClass = cleanId(`gridImg_${upn}`);
+                    document.querySelectorAll('.'+imgClass).forEach((img) => {
+                        if (newState){
+                            img.classList.add('aanwezig');
+                            img.classList.remove('afwezig');
+                        }else{
+                            img.classList.add('afwezig');
+                            img.classList.remove('aanwezig');
+                        }
+                    });
                 }else{
                     // Herstel de checkbox
                     e.target.checked = !e.target.checked
@@ -183,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     let chkId = cleanId(`${locatie}gridPresence${medewerker.userPrincipalName}`);
                     let msgClass = cleanId('message_' + medewerker.userPrincipalName);
                     let msgId = cleanId(`${locatie}gridMessage${medewerker.userPrincipalName}`);
+                    let imgClass = cleanId(`gridImg_${medewerker.userPrincipalName}`);
                     let readonly = 'readonly'
                     if (medewerker.userPrincipalName == me){
                         readonly = '';
@@ -191,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     `
     <div class="col-sm">
         <div id="card${medewerker.upn}" class="card flex-row">
-            <img class="card-img-left example-card-img-responsive ${aanwezigClass}" src="/api/getProfilePic/${medewerker.userPrincipalName}" height=75 width=75>
+            <img class="card-img-left example-card-img-responsive ${aanwezigClass} ${imgClass}" src="/api/getProfilePic/${medewerker.userPrincipalName}" height=75 width=75>
             <div class="card-body">
                 <h4 class="card-title h5 h4-sm">${medewerker.displayName}</h4>
                 <input type="text "id="${msgId}" wat="opmerking" upn="${medewerker.userPrincipalName}" class="gridEdit ${msgClass}" value='${medewerker.message}' org_value='${medewerker.message}' ${readonly}><br>
@@ -223,17 +233,17 @@ document.addEventListener("DOMContentLoaded", function() {
             document.querySelector('#accordionGroepen').innerHTML = accordionItems;
             // Change event handler op de grid checkboxen
             document.querySelectorAll(".gridCheckbox").forEach((checkbox) =>{
-                if (!checkbox.readOnly){
+                //if (!checkbox.readOnly){
                     checkbox.addEventListener("change", handlePresence, false);
-                }
+                //}
             });
             // Change event handler op de grid text inputs
             document.querySelectorAll(".gridEdit").forEach((input) =>{
-                if (!input.readOnly){
+                //if (!input.readOnly){
                     //console.log(`adding eventhandler ${input.getAttribute('upn')}`);
                     input.addEventListener("keydown", handleMessageEdit, false);
                     input.addEventListener("focusout", handleMessageEdit, false);
-                }
+                //}
             });
         })
         .catch( err => {
@@ -298,6 +308,17 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
                         
                     }
+                    // Img presence syncen met slider
+                    let imgClass = cleanId(`gridImg_${medewerker.userPrincipalName}`);
+                    document.querySelectorAll('.'+imgClass).forEach((img) =>{
+                        if (slider.checked){
+                            img.classList.add('aanwezig');
+                            img.classList.remove('afwezig');
+                        }else{
+                            img.classList.add('afwezig');
+                            img.classList.remove('aanwezig');
+                        }
+                    });
                 }
 
             }
