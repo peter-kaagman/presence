@@ -7,8 +7,9 @@
 #header {
     height: 100px;
     padding-top: 10px;
-    padding-bottom: 10px;
-}
+    padding-bottom: 0px;
+    background-color: RGBA(0,127,202,1);
+  }
 #logo{
   background-image: url("/images/Atlas_College_logo_geen_tekst_fc_C.png");
   background-repeat: no-repeat;
@@ -24,6 +25,9 @@
   color: white;
   font-size: x-large;
   font-family: "Permanent Marker",handwriting;
+}
+#nav{
+  padding-top: 0px;
 }
 #me {
     background-color: RGBA(0,127,202,.5);

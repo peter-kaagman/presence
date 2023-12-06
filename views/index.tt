@@ -43,10 +43,6 @@
       </div>
     </div>
   </div> <!-- meAccordion -->
-  <div id="nav">
-    <!-- Hier moet een menu/status bar komen -->
-    <p>Hier komt een navigatie balk</p>
-  </div>
   <div id="accordionGroepen" class="accordion">
     <!-- Content uit JS-->
     <p>Gegevens worden geladen, moment.</p>

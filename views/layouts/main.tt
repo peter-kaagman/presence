@@ -17,6 +17,7 @@
       <div id="logo" class="col-sm-2"></div>
       <div id="title" class="col-sm-10 d-flex align-items-center"><p class="titleText"><p id="titleText">Aan- en afwezigheid</p></div>
     </div>
+    <% process 'nav.tt' %>
     <% content %>
     <div id="footer" class="row">
       <div class="col-sm">
