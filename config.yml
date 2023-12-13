@@ -67,7 +67,7 @@ engines:
 plugins:
   Database:
     driver: 'SQLite'
-    database: '/var/www/presence/db/presence.sqlite' # Dit kan onder fcgid geen relatief pad zijn.
+    database: './db/presence.sqlite' # Dit kan onder fcgid geen relatief pad zijn.
     connection_check_threshhold: 10
     dbi_param:
       RaiseError: 1
@@ -75,4 +75,4 @@ plugins:
 
 AppSettings:
   GraphEndpoint: https://graph.microsoft.com
-  CacheDir: '/var/www/presence/cache' # Dit kan onder fcgid geen relatief pad zijn
+  CacheDir: './cache' # Dit kan onder fcgid geen relatief pad zijn

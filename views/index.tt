@@ -31,10 +31,16 @@
             >
             <div class="card-body">
                 <h4 id="meName" class="card-title h5 h4-sm">Wordt geladen.</h4>
-                <div  id="meMessage" class="card-text">Wordt geladen</div>
+                <div id="Message">
+                  <span  id="meMessage" class="card-text" data-bs-toggle="tooltip" data-bs-placement="top" title="eventueel een mededeling">Wordt geladen</span>
+                  <label class="switch sticky">
+                    <input id="meStickyMessage" type="checkbox">
+                    <span class="slider round sticky" data-bs-toggle="tooltip" data-bs-placement="top" title="sticky mededeling"></span>
+                  </label>
+                </div>
                 <label class="switch">
                   <input id="mePresence" type="checkbox">
-                  <span class="slider round"></span>
+                  <span class="slider round" data-bs-toggle="tooltip" data-bs-placement="top" title="aan- of afwezig"></span>
                 </label>
             </div>
           </div>

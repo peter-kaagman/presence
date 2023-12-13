@@ -86,7 +86,6 @@ img.aanwezig {
     -webkit-transition: .4s;
     transition: .4s;
   }
-  
   .slider:before {
     position: absolute;
     content: "";
@@ -126,6 +125,35 @@ img.aanwezig {
     border: none;
     outline: none;
   }
+
+  .switch.sticky {
+    position: relative;
+    display: inline-block;
+    width: 45px;
+    height: 24px;
+  }
+  .slider.round.sticky {
+    border-radius: 14px;
+  }
+  .slider.sticky{
+    background-color: grey;
+  }  
+  input:checked + .slider.sticky:before {
+    -webkit-transform: translateX(18px);
+    -ms-transform: translateX(18px);
+    transform: translateX(18px);
+  }
+  .slider.sticky:before {
+    height: 21px;
+    width: 21px;
+    left: 4px;
+    bottom: 2px;
+  }
+
+
+
+
+
   .dirty{
     border: 1px solid red;
     outline: red solid 1px

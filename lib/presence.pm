@@ -71,6 +71,7 @@ get '/api/getMe' => sub {
         if ($result->{'me'}){
             $result->{'user_info'}{'aanwezig'} = $user_data->{'azuread'}{'user_info'}{'aanwezig'};
             $result->{'user_info'}{'message'} = $user_data->{'azuread'}{'user_info'}{'message'};
+            $result->{'user_info'}{'sticky_message'} = $user_data->{'azuread'}{'user_info'}{'sticky_message'};
             $result->{'user_info'}{'upn'} = lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'});
         }
     }else{
@@ -114,7 +115,8 @@ post '/api/postData' => sub{
     my $user_data = session->read('oauth');
     if ( $user_data->{'azuread'}{'login_info'}{'roles'} ){ # valid login
         my $post = from_json(request->body);
-        my @validFields = ('opmerking','timestamp_aanwezig');
+        print Dumper $post;
+        my @validFields = ('opmerking','timestamp_aanwezig','sticky_opmerking');
         if ( 
             (lc($post->{'upn'}) eq lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'})) && 
             ( grep(/$post->{'wat'}/,@validFields) ) ){
@@ -126,12 +128,15 @@ post '/api/postData' => sub{
                 $sth->execute(lc($post->{'upn'}));
                 if (my $row = $sth->fetchrow){
                     # Medewerker bestaat al
+                    say "Medewerker bestaat";
                     $qry = "Update medewerkers set '$wat' = ? Where upn = ?";
                 }else{
                     # Medewerker bestaat nog niet
+                    say "Medewerker bestaat";
                     $qry = "Insert Into medewerkers ('$wat','upn') values (? ,?)";
                 }
                 $sth->finish;
+                say $qry;
                 $sth = database->prepare($qry);
                 if ($sth->execute($value,lc($post->{'upn'}))){
                     status 200;
@@ -179,11 +184,12 @@ sub _getLocatieMedewerkers{
 }
 sub _findMedewerkers{
     my $group = shift;
+    my $user_data = session->read('oauth');
     my @group_leden;
     say "We gaan op zoek naar $group";
     # Eerst de ID zoeken van de AU in kwestie
     # Ik moet filteren met "startswith"
-    # er kunnen dus meerdere resultaten ziij
+    # er kunnen dus meerdere resultaten zijn
     my $url = config->{'AppSettings'}{'GraphEndpoint'}."/v1.0/groups";
     $url .= "?\$filter=startswith(displayName,\'$group\')";
     $url .= "&\$select=displayName,id";
@@ -202,6 +208,13 @@ sub _findMedewerkers{
     # UPN moet lowercase zijn
     for (my $i=0; $i < @group_leden; $i++){
         $group_leden[$i]->{'userPrincipalName'} = lc($group_leden[$i]->{'userPrincipalName'});
+        # Als de aangemelde gebruiker nog niet in de db staat dan blijft zijn user_info
+        # incompleet. Hier zorgen dat het compleet wordt
+        if ($group_leden[$i]->{'userPrincipalName'} eq lc($user_data->{'azuread'}{'user_info'}{'userPrincipalName'})){
+            $user_data->{'azuread'}{'user_info'}{'presence'} = 0;
+            $user_data->{'azuread'}{'user_info'}{'message'} = "";
+            $user_data->{'azuread'}{'user_info'}{'sticky_message'} = 0;
+        }
     }
     my @sorted = sort{$a->{'displayName'} cmp $b->{'displayName'}} @group_leden;
     return \@sorted;
@@ -215,6 +228,7 @@ sub _getPresence{
     my $sth = database->prepare($qry);
     $sth->execute();
     my $medewerkers_db = $sth->fetchall_hashref('upn');
+    say Dumper $medewerkers_db;
     $sth->finish;
     #say "Medewerkers vanuit de db";
     #print Dumper $medewerkers_db;
@@ -226,22 +240,30 @@ sub _getPresence{
             if ($medewerkers_db->{$upn}){
                 # Als de medewerker in de db staat
                 # lees dan zijn presence adv timestamp-aanwezig
-                #say ">>>>>>>>>>>>>>>>>>>>".$medewerkers_db->{$upn}{'upn'}."staat in de db";
-                #say ">>>>>>>>>>>>>>>>>>>>".$medewerkers_db->{$upn}{'timestamp_aanwezig'}."staat in de db";
                 if ( ($medewerkers_db->{$upn}{'timestamp_aanwezig'}) && (_isToday($medewerkers_db->{$upn}{'timestamp_aanwezig'}))){
                     $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 1;
                 }else{
                     $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 0;
                 }
-                $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  $medewerkers_db->{$upn}{'opmerking'};
+                # Message is afhankelijk van of deze sticky is
+                say "vandaag?:" . _isToday($medewerkers_db->{$upn}{'timestamp_opmerking'});
+                if ( $medewerkers_db->{$upn}{'sticky_opmerking'} || _isToday($medewerkers_db->{$upn}{'timestamp_opmerking'})){
+                    $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  $medewerkers_db->{$upn}{'opmerking'};
+                }else{
+                    $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  "";
+                }
+                say "opmerking:" . $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'};
+                $locaties_data->{$locatie}{'medewerkers'}[$i]{'sticky_message'} = $medewerkers_db->{$upn}{'sticky_opmerking'};
                 # Als dit ikzelf ben dan ook opnemen in user_info
                 if ($upn eq lc($oauth_data->{'azuread'}{'login_info'}{'upn'})){
-                    $oauth_data->{'azuread'}{'user_info'}{'aanwezig'} = $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'};
-                    $oauth_data->{'azuread'}{'user_info'}{'message'} = $medewerkers_db->{$upn}{'opmerking'};
+                    $oauth_data->{'azuread'}{'user_info'}{'aanwezig'}       = $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'};
+                    $oauth_data->{'azuread'}{'user_info'}{'message'}        = $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'};
+                    $oauth_data->{'azuread'}{'user_info'}{'sticky_message'} = $locaties_data->{$locatie}{'medewerkers'}[$i]{'sticky_message'};
                 }
             }else{
                 $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 0;
                 $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  "";
+                $locaties_data->{$locatie}{'medewerkers'}[$i]{'sticky_message'} =  0;
             }
         }
     }

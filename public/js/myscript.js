@@ -28,10 +28,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     let msgClass = cleanId('message_' + data.user_info.upn);
                     //console.log(`msgClass is ${msgClass}`)
                     document.querySelector('#meMessage').innerHTML = `<input type="text" id="edMeMessage" class="${msgClass}" wat="opmerking" upn="${data.user_info.upn}" value="${data.user_info.message}" org_value="${data.user_info.message}">`;
+                    document.querySelector('#meStickyMessage').setAttribute('upn', data.user_info.upn);
+                    document.querySelector('#meStickyMessage').setAttribute('wat', 'sticky_opmerking');
                     document.querySelector('#mePresence').setAttribute('upn', data.user_info.upn);
                     document.querySelector('#mePresence').setAttribute('wat', 'timestamp_aanwezig');
                     document.querySelector('#mePresence').classList.add(chkClass);
                     console.log(data);
+                    // Set Presence
                     if(data.user_info.aanwezig == 1){
                         //console.log("aanwezig");
                         document.querySelector('#meImage').classList.remove('afwezig');
@@ -45,11 +48,21 @@ document.addEventListener("DOMContentLoaded", function() {
                         document.querySelector('#mePresence').checked = false;
                         //document.querySelector('#mePresence').classList.add('afwezig');
                     }
+                    // Set Sticky
+                    if(data.user_info.sticky_message == 1){
+                        //console.log("sticky");
+                        document.querySelector('#meStickyMessage').checked = true;
+                    }else{
+                        //console.log("not sticky");
+                        document.querySelector('#meStickyMessage').checked = false;
+                    }
                     // Add eventlisteners on #edMeMessage
                     document.querySelector("#edMeMessage").addEventListener("keydown", handleMessageEdit, false);
                     document.querySelector("#edMeMessage").addEventListener("focusout", handleMessageEdit, false);
                     // Add eventlistener on #mePresence
                     document.querySelector("#mePresence").addEventListener("change", handlePresence, false );
+                    // Add eventlistener on #meStickyMessage
+                    document.querySelector("#meStickyMessage").addEventListener("change", handleMeStickyMessage, false );
                 }else{
                     document.querySelector('#meMessage').textContent = `Jouw aanwezigheid wordt niet bijgehouden`;
                     document.querySelector('#mePresence').textContent = "";
@@ -142,6 +155,33 @@ document.addEventListener("DOMContentLoaded", function() {
             // Remove dirty
             console.log('removing dirty');
             e.target.classList.remove('dirty');
+        }else{
+            // Herstel de checkbox
+            e.target.checked = !e.target.checked
+        }
+    }
+    // Evenlistener voor MeStickyMessage
+    var handleMeStickyMessage = function(e){
+        // Alleen toestaan als de gebruiker het zelf is
+        if (e.target.getAttribute('upn') == me){
+            let value;
+            if(e.target.checked){
+                value = 1;
+            }else{
+                value = 0;
+            }
+            postData( { value: value, upn: e.target.getAttribute('upn'), wat: e.target.getAttribute('wat') })
+            .then( (response) => {
+                console.log('Dit krijgen we terug');
+                console.log(response); 
+                if(response.ok){
+                    // Cascade veranderingen
+                }else{
+                    // Herstel de checkbox
+                    e.target.checked = !e.target.checked
+                }
+            });
+            doRefresh();
         }else{
             // Herstel de checkbox
             e.target.checked = !e.target.checked
