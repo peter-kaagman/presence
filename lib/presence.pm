@@ -128,15 +128,15 @@ post '/api/postData' => sub{
                 $sth->execute(lc($post->{'upn'}));
                 if (my $row = $sth->fetchrow){
                     # Medewerker bestaat al
-                    say "Medewerker bestaat";
+                    #say "Medewerker bestaat";
                     $qry = "Update medewerkers set '$wat' = ? Where upn = ?";
                 }else{
                     # Medewerker bestaat nog niet
-                    say "Medewerker bestaat";
+                    #say "Medewerker bestaat niet";
                     $qry = "Insert Into medewerkers ('$wat','upn') values (? ,?)";
                 }
                 $sth->finish;
-                say $qry;
+                #say $qry;
                 $sth = database->prepare($qry);
                 if ($sth->execute($value,lc($post->{'upn'}))){
                     status 200;
@@ -164,7 +164,7 @@ sub _getLocatieMedewerkers{
     my $or_string = join "\' or naam Like \'", @{ $session_data->{'azuread'}{'login_info'}{'roles'} };
     $or_string = "\'". $or_string . "\'";
     my $qry = "Select * From locaties Where naam Like $or_string";
-    say Dumper database;
+    #say Dumper database;
     my $sth = database->prepare($qry) or warn(database->errstr);
     $sth->execute();
     # Zoek per locatie de collega's erbij
@@ -186,7 +186,7 @@ sub _findMedewerkers{
     my $group = shift;
     my $user_data = session->read('oauth');
     my @group_leden;
-    say "We gaan op zoek naar $group";
+    #say "We gaan op zoek naar $group";
     # Eerst de ID zoeken van de AU in kwestie
     # Ik moet filteren met "startswith"
     # er kunnen dus meerdere resultaten zijn
@@ -228,7 +228,7 @@ sub _getPresence{
     my $sth = database->prepare($qry);
     $sth->execute();
     my $medewerkers_db = $sth->fetchall_hashref('upn');
-    say Dumper $medewerkers_db;
+    #say Dumper $medewerkers_db;
     $sth->finish;
     #say "Medewerkers vanuit de db";
     #print Dumper $medewerkers_db;
@@ -246,13 +246,13 @@ sub _getPresence{
                     $locaties_data->{$locatie}{'medewerkers'}[$i]{'presence'} = 0;
                 }
                 # Message is afhankelijk van of deze sticky is
-                say "vandaag?:" . _isToday($medewerkers_db->{$upn}{'timestamp_opmerking'});
+                #say "vandaag?:" . _isToday($medewerkers_db->{$upn}{'timestamp_opmerking'});
                 if ( $medewerkers_db->{$upn}{'sticky_opmerking'} || _isToday($medewerkers_db->{$upn}{'timestamp_opmerking'})){
                     $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  $medewerkers_db->{$upn}{'opmerking'};
                 }else{
                     $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'} =  "";
                 }
-                say "opmerking:" . $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'};
+                #say "opmerking:" . $locaties_data->{$locatie}{'medewerkers'}[$i]{'message'};
                 $locaties_data->{$locatie}{'medewerkers'}[$i]{'sticky_message'} = $medewerkers_db->{$upn}{'sticky_opmerking'};
                 # Als dit ikzelf ben dan ook opnemen in user_info
                 if ($upn eq lc($oauth_data->{'azuread'}{'login_info'}{'upn'})){
