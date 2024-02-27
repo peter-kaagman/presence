@@ -25,7 +25,10 @@ Deze readme moet niet gezien worden als een handleiding. Het is meer een plan wa
  - Azure voor medewerkerlijst en authenticatie
  - Dancer2 voor website en api
  - Bootstrap voor layout/css
- - SQLite database voor personal settings en aanwezigheid
+ - ~~SQLite database voor personal settings en aanwezigheid~~
+ - MySQL Database *)
+
+*) Bij een test met 5 gebruikers bleek SQLite niet bestand tegen gelijktijdige updates => locked database bestand.
 
 ## Data model
 
