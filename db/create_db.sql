@@ -7,7 +7,7 @@ Create Table If Not Exists locaties(
 );
 Create Table If Not Exists medewerkers(
     upn Text Not Null,
-    timestamp_aanwezig Text Default "2023-11-28T09:47:46.129Z",
+    timestamp_aanwezig Text Default "2023-11-29T09:47:46.129Z",
     opmerking Text Default "",
     sticky_opmerking Integer Default 0,
     timestamp_opmerking Text Default "2023-11-28T09:47:46.129Z",
