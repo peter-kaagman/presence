@@ -1,14 +1,16 @@
 document.addEventListener("DOMContentLoaded", function() {
     console.log("Document loaded");
     let me = "";
+    console.log(window.location.pathname);
+    console.log('blaat');
     getMe();
     getGroepen();
-
     // Interval function to do a refresh
     setInterval( function(){
         console.log("refresh triggered");
         doRefresh();
     }, 1000 * 60 * 5);
+
 
     // Haal de Me dat op en maak de output
     function getMe(){
@@ -36,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     console.log(data);
                     // Set Presence
                     if(data.user_info.aanwezig == 1){
-                        //console.log("aanwezig");
+                        console.log("aanwezig");
                         document.querySelector('#meImage').classList.remove('afwezig');
                         document.querySelector('#meImage').classList.add('aanwezig');
                         document.querySelector('#mePresence').checked = true;
@@ -116,13 +118,15 @@ document.addEventListener("DOMContentLoaded", function() {
             let value;
             if(e.target.checked){
                 const date = new Date();
-                value = date.toISOString();
+                value = date.toISOString().slice(0, 10);//.replace('T', ' ');
+                value += ' ';
+                value += date.toLocaleTimeString('nl-NL');
                 document.querySelector('#meImage').classList.add('aanwezig');
                 document.querySelector('#meImage').classList.remove('afwezig');
             }else{
                 document.querySelector('#meImage').classList.add('afwezig');
                 document.querySelector('#meImage').classList.remove('aanwezig');
-                value = ''
+                value = '00-00-00 00:00'
             }
             let upn = e.target.getAttribute('upn');
             postData( { value: value, upn: upn, wat:e.target.getAttribute('wat') })

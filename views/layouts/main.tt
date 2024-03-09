@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="<% request.uri_base %>/css/style.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Permanent Marker">
 
-<script src="./js/myscript.js"></script>
 
 </head>
 <body>

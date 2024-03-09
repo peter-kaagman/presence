@@ -11,8 +11,14 @@ use HTML::Escape qw/escape_html/;
 use Data::Dumper;
 use Image::Magick;
 use DateTime;
+use FindBin;
+#use lib "$FindBin::Bin/../lib";
 
 our $VERSION = '0.1';
+
+set  config->{'AppSettings'}{'CacheDir'} = $FindBin::Bin . config->{'AppSettings'}{'CacheDir'}; 
+#say config->{'AppSettings'}{'CacheDir'};
+
 # Routes
 get '/' => sub {
     my $session_data = session->read('oauth');
@@ -37,6 +43,8 @@ hook before => sub {
     my $session_data = session->read('oauth');
     my $provider = "azuread"; # Lower case of the authentication plugin used
     my $now = DateTime->now->epoch;
+
+    #say "\n request path is " . request->path . "\n";
  
     if (
             (
@@ -129,14 +137,14 @@ post '/api/postData' => sub{
                 if (my $row = $sth->fetchrow){
                     # Medewerker bestaat al
                     #say "Medewerker bestaat";
-                    $qry = "Update medewerkers set '$wat' = ? Where upn = ?";
+                    $qry = "Update medewerkers set `$wat` = ? Where `upn` = ?";
                 }else{
                     # Medewerker bestaat nog niet
                     #say "Medewerker bestaat niet";
-                    $qry = "Insert Into medewerkers ('$wat','upn') values (? ,?)";
+                    $qry = "Insert Into medewerkers ( `$wat`,`upn`) values (? ,?)";
                 }
                 $sth->finish;
-                #say $qry;
+                say $qry;
                 $sth = database->prepare($qry);
                 if ($sth->execute($value,lc($post->{'upn'}))){
                     status 200;
@@ -144,6 +152,19 @@ post '/api/postData' => sub{
                     status 500;
                 }
                 $sth->finish;
+                # Update ook de opmerking timestamp indien deze geupdate is
+                # dit lukt niet met een trigger omdat het in dezelfde tabel is
+                $qry = "Update medewerkers set `timestamp_opmerking` = ? Where `upn` = ?";
+                $sth = database->prepare($qry);
+                if ($wat eq 'opmerking'){
+                    if (length($value) > 0 ){
+                        my $now = DateTime->now;
+                        $sth->execute($now->ymd.' '.$now->hms,$post->{'upn'});
+                    }else{
+                        $sth->execute('0000-00-00 00:00',$post->{'upn'});
+                    } 
+                    $sth->finish;
+                }
             }else{
                 status 400;
             }
